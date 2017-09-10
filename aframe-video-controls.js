@@ -48,6 +48,10 @@
 //EVERYTHING THATS EASY TO CONTROL VIA JAVASCRIPT
 //https://www.w3schools.com/TAgs/ref_av_dom.asp
 
+//duration is measured in seconds
+
+
+
 //make sure we have aframe
 	if (typeof AFRAME === 'undefined') {
 	  throw new Error('Component attempted to register before AFRAME was available.');
@@ -142,6 +146,8 @@
 	    //image sources for play/pause and getting elements from html
 	    self.play_image_src = document.getElementById("video-play-image") ? "#video-play-image" : "https://res.cloudinary.com/dxbh0pppv/image/upload/c_scale,h_512,q_10/v1471016296/play_wvmogo.png";
 	    self.pause_image_src = document.getElementById("video-pause-image") ? "#video-pause-image" :"https://res.cloudinary.com/dxbh0pppv/image/upload/c_scale,h_512,q_25/v1471016296/pause_ndega5.png";
+			self.ff_image_src = document.getElementById("video-fastforward-image") ? "#video-fastforward-image" : "//fillinhere";
+			self.rw_image_src = document.getElementById("video-rewind-image") ? "#video-rewind-image" : "//fillinhere";
 
 	    //variable that displays either play or pause images
 	    this.play_image = document.createElement("a-image");
@@ -149,7 +155,9 @@
 			//assign appropriate image to variable based on whether or not the video is paused
 	    if (this.video_el.paused) {
 	      this.play_image.setAttribute("src", self.play_image_src);
-	    } else {
+	    }
+			//else if()
+			else {
 	      this.play_image.setAttribute("src", self.pause_image_src);
 	    }
 
@@ -157,7 +165,15 @@
 	    this.video_el.addEventListener("ended", function(){
 	        self.play_image.setAttribute("src", self.play_image_src);
 	    });
+/*
+			this.video_el.addEventListener("fastforward", function(){
+				  self.play_image.setAttribute("src", self.play_image_src);
+			})
 
+			this.video_el.addEventListener("rewind", function(){
+				  self.play_image.setAttribute("src", self.play_image_src);
+			})
+*/
 	    // Change icon to 'play' while paused
 	    this.video_el.addEventListener("pause", function(){
 	        self.play_image.setAttribute("src", self.play_image_src);
@@ -224,12 +240,14 @@
 
 	        // Arrow up: one step forward
 	        case 38:
+					//fastforward
 	           self.current_step = self.current_step < (self.bar_steps) ? self.current_step + 1 : self.current_step;
 	           self.position_time_from_steps();
 	        break;
 
 	        // Arrow down: one step back
 	        case 40:
+					//rewind
 	           self.current_step = self.current_step > 0 ? self.current_step - 1 : self.current_step;
 	           self.position_time_from_steps();
 	        break;
@@ -332,7 +350,7 @@
 
 	    // Refresh every 250 millis
 
-	    if(typeof(this.last_time) === "undefined" || (t - this.last_time ) > 250) {
+	    if(typeof(this.last_time) === "undefined" || (t - this.last_time ) > 125) {
 
 	        // At the very least, have all video metadata
 	        // (https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/readyState)
@@ -340,6 +358,8 @@
 	        if(this.video_el.readyState > 0) {
 
 	            // Get current position minutes and second, and add leading zeroes if needed
+
+							this.video_el.playbackRate = 4;
 
 	            var current_minutes = Math.floor(this.video_el.currentTime / 60);
 	            var current_seconds = Math.floor(this.video_el.currentTime % 60);

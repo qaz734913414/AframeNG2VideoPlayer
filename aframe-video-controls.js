@@ -144,21 +144,26 @@
 	    this.video_el = document.querySelector(this.video_selector);
 
 	    //image sources for play/pause and getting elements from html
-	    self.play_image_src = document.getElementById("video-play-image") ? "#video-play-image" : "https://res.cloudinary.com/dxbh0pppv/image/upload/c_scale,h_512,q_10/v1471016296/play_wvmogo.png";
-	    self.pause_image_src = document.getElementById("video-pause-image") ? "#video-pause-image" :"https://res.cloudinary.com/dxbh0pppv/image/upload/c_scale,h_512,q_25/v1471016296/pause_ndega5.png";
-			self.ff_image_src = document.getElementById("video-fastforward-image") ? "#video-fastforward-image" : "//fillinhere";
-			self.rw_image_src = document.getElementById("video-rewind-image") ? "#video-rewind-image" : "//fillinhere";
+	    self.play_image_src = document.getElementById("video-play-image") ? "#video-play-image" : "Icons/play.png";
+	    self.pause_image_src = document.getElementById("video-pause-image") ? "#video-pause-image" :"Icons/pause.png";
+			self.ff_image_src = document.getElementById("video-fastforward-image") ? "#video-fastforward-image" : "Icons/fastForward.png";
+			self.rw_image_src = document.getElementById("video-rewind-image") ? "#video-rewind-image" : "Icons/rewind.png";
 
 	    //variable that displays either play or pause images
 	    this.play_image = document.createElement("a-image");
+			this.fastforward_image = document.createElement("a-image");
+			this.rewind_image = document.createElement("a-image");
 
 			//assign appropriate image to variable based on whether or not the video is paused
 	    if (this.video_el.paused) {
 	      this.play_image.setAttribute("src", self.play_image_src);
+				this.fastforward_image.setAttribute("src", self.ff_image_src);
+				this.rewind_image.setAttribute("src", self.rw_image_src);
 	    }
-			//else if()
 			else {
 	      this.play_image.setAttribute("src", self.pause_image_src);
+				this.fastforward_image.setAttribute("src", self.ff_image_src);
+				this.rewind_image.setAttribute("src", self.rw_image_src);
 	    }
 
 	    // Change icon to 'play' on end
@@ -207,8 +212,27 @@
 	        }
 	        else {
 	            this.setAttribute("src", self.pause_image_src);
+							self.video_el.playbackRate = 1.0;
 	            self.video_el.play();
 	        }
+
+	        // Prevent propagation upwards (e.g: canvas click)
+	        event.stopPropagation();
+	        event.preventDefault();
+	    });
+
+			//When user clicks play/pause, change to opposite state
+	    this.fastforward_image.addEventListener('click', function (event) {
+				  self.video_el.playbackRate = 2.0;
+
+				  // Prevent propagation upwards (e.g: canvas click)
+	        event.stopPropagation();
+	        event.preventDefault();
+	    });
+
+			//When user clicks play/pause, change to opposite state
+	    this.rewind_image.addEventListener('click', function (event) {
+	        self.video_el.playbackRate = -2.0;
 
 	        // Prevent propagation upwards (e.g: canvas click)
 	        event.stopPropagation();
@@ -241,19 +265,40 @@
 	        // Arrow up: one step forward
 	        case 38:
 					//fastforward
-	           self.current_step = self.current_step < (self.bar_steps) ? self.current_step + 1 : self.current_step;
-	           self.position_time_from_steps();
+						 self.video_el.playbackRate=1;
+	           //self.fastforward_image.dispatchEvent(new Event('click'));
 	        break;
 
 	        // Arrow down: one step back
 	        case 40:
 					//rewind
-	           self.current_step = self.current_step > 0 ? self.current_step - 1 : self.current_step;
-	           self.position_time_from_steps();
+						 self.video_el.playbackRate=1;
+	           //self.rewind_image.dispatchEvent(new Event('click'));
 	        break;
 
 	      }
 	    }, false);
+
+			window.addEventListener('keydown', function(event) {
+	      switch (event.keyCode) {
+
+	        // Arrow up: one step forward
+	        case 38:
+					//fastforward
+						 self.video_el.playbackRate=2.0;
+	           //self.fastforward_image.dispatchEvent(new Event('click'));
+	        break;
+
+	        // Arrow down: one step back
+	        case 40:
+					//rewind
+						 self.video_el.playbackRate= -1;
+	           //self.rewind_image.dispatchEvent(new Event('click'));
+	        break;
+
+	      }
+	    }, false);
+
 
 
 	    // Create transport bar
@@ -288,6 +333,8 @@
 	    // Append image icon + info text + bar to component root
 	    this.el.appendChild(this.bar_canvas);
 	    this.el.appendChild(this.play_image);
+			this.el.appendChild(this.fastforward_image);
+			this.el.appendChild(this.rewind_image);
 	    this.el.appendChild(this.bar);
 
 
@@ -329,11 +376,17 @@
 	    this.bar.setAttribute("width", this.data.size);
 	    this.bar.setAttribute("position", "0.0 0.0 0");
 
-
 	    this.play_image.setAttribute("height", this.data.size/4.0);
 	    this.play_image.setAttribute("width", this.data.size/4.0);
-	    this.play_image.setAttribute("position", ((-this.data.size/2.0) * 1.4) + " 0 0");
+	    this.play_image.setAttribute("position", ((-this.data.size/2.0) * 1.4)-.3 + " 0 0");
 
+			this.fastforward_image.setAttribute("height", this.data.size/4.0);
+			this.fastforward_image.setAttribute("width", this.data.size/4.0);
+			this.fastforward_image.setAttribute("position", ((-this.data.size/2.0) * 1.4) + " 0 0");
+
+			this.rewind_image.setAttribute("height", this.data.size/4.0);
+			this.rewind_image.setAttribute("width", this.data.size/4.0);
+			this.rewind_image.setAttribute("position", ((-this.data.size/2.0) * 1.4)-.6 + " 0 0");
 
 	  },
 
@@ -350,7 +403,7 @@
 
 	    // Refresh every 250 millis
 
-	    if(typeof(this.last_time) === "undefined" || (t - this.last_time ) > 125) {
+	    if(typeof(this.last_time) === "undefined" || Math.abs(t - this.last_time) > 125) {
 
 	        // At the very least, have all video metadata
 	        // (https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/readyState)
@@ -359,7 +412,7 @@
 
 	            // Get current position minutes and second, and add leading zeroes if needed
 
-							this.video_el.playbackRate = 4;
+							//this.video_el.playbackRate = 4;
 
 	            var current_minutes = Math.floor(this.video_el.currentTime / 60);
 	            var current_seconds = Math.floor(this.video_el.currentTime % 60);
